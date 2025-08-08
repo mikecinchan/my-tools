@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Tools Directory</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121833;
+      --ink: #e7eaf6;
+      --muted: #a8b0d9;
+      --accent: #6ea8fe;
+      --danger: #ff6b6b;
+      --ok: #30db7d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1020, #0e1430 40%, #0b1020);
+      color: var(--ink);
+      min-height: 100svh;
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 16px; }
+    header { display: grid; gap: 8px; margin-bottom: 16px; }
+    h1 { font-weight: 700; letter-spacing: .2px; margin: 0; font-size: 22px; }
+    .row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 840px){ .row { grid-template-columns: 1fr 360px; align-items: start; } }
+
+    .panel { background: var(--panel); border: 1px solid #1f2650; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+    .panel .hd { padding: 14px 16px; border-bottom: 1px solid #1c2347; display:flex; align-items:center; justify-content:space-between; }
+    .panel .bd { padding: 14px 16px; }
+
+    input[type="text"], input[type="url"], textarea { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid #2a346b; background:#0e1430; color: var(--ink); outline: none; font-size: 15px; }
+    input::placeholder, textarea::placeholder { color: #6d75a8; }
+    textarea { min-height: 96px; resize: vertical; }
+
+    .tools { display:grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 600px){ .tools { grid-template-columns: 1fr 1fr; } }
+    .tool { background:#0e1430; border:1px solid #202753; border-radius:12px; padding:12px; display:grid; gap:6px; }
+    .tool h3 { margin:0; font-size: 16px; }
+    .tool a { color: var(--accent); text-decoration: none; word-break: break-word; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .empty { color: var(--muted); padding: 12px; text-align: center; border:1px dashed #2a346b; border-radius: 10px; }
+
+    .actions { display:flex; gap:8px; margin-top: 6px; flex-wrap: wrap; }
+    .btn { border:1px solid #2a346b; background:#0b1230; color:var(--ink); padding:8px 12px; border-radius:10px; cursor:pointer; font-size: 14px; flex: 1; min-width: 100px; }
+    .btn.primary { background: linear-gradient(180deg, #2a6bff, #2455d9); border-color:#2a6bff; }
+
+    .grid2 { display:grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 560px){ .grid2 { grid-template-columns: 1fr 1fr; } }
+
+    .pill { font-size: 12px; color:#c7cdf1; background:#1a2046; border:1px solid #2a346b; padding:4px 8px; border-radius:999px; }
+    .bar { display:flex; gap:10px; align-items:center; flex-direction: column; }
+    @media (min-width: 620px) { .bar { flex-direction: row; } }
+    .sp { flex:1; width: 100%; }
+    .hint { font-size: 12px; color:#98a2d7; margin-top: 6px; }
+  .btn.copy { padding: 4px 8px; font-size: 12px; border-radius: 6px; background: #1c244f; border: 1px solid #2a346b; cursor: pointer; }
+.btn.copy:hover { background: #263068; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🧰 My Tools Directory</h1>
+      <div class="bar panel">
+        <div class="bd sp">
+          <input id="search" type="text" placeholder="Search by name, description, or URL… (e.g., 'design', 'github', 'Figma')" />
+          <div class="hint">Tip: search is case-insensitive and matches partial words across all fields.</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="row">
+      <section class="panel">
+        <div class="hd">
+          <strong>Results</strong>
+          <span class="pill"><span id="count">0</span> tools</span>
+        </div>
+        <div class="bd">
+          <div id="list" class="tools"></div>
+          <div id="empty" class="empty" style="display:none">No tools yet. Add one on the right →</div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="hd"><strong>Add a Tool</strong></div>
+        <div class="bd">
+          <form id="toolForm" autocomplete="off">
+            <div class="grid2">
+              <div>
+                <label class="muted">Tool name</label>
+                <input id="name" type="text" placeholder="e.g., Figma" required />
+              </div>
+              <div>
+                <label class="muted">Tool URL</label>
+                <input id="url" type="url" placeholder="https://example.com" required />
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <label class="muted">Description</label>
+              <textarea id="desc" placeholder="What is this tool for?" required></textarea>
+            </div>
+            <div class="actions">
+              <button class="btn primary" type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+
+
+
+
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCr0mWqPpKagshNi52LmLkLU_xOKdlImo4",
+    authDomain: "tools-directory-2e1b0.firebaseapp.com",
+    projectId: "tools-directory-2e1b0",
+    storageBucket: "tools-directory-2e1b0.firebasestorage.app",
+    messagingSenderId: "922717661135",
+    appId: "1:922717661135:web:816f2bca1b4cc0f3f994ba"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  const loginForm = document.createElement('form');
+  loginForm.innerHTML = `
+    <div style="max-width:360px;margin:10vh auto;padding:20px;background:#121833;border:1px solid #1f2650;border-radius:12px;color:#e7eaf6">
+      <h2 style="margin-top:0;font-size:20px;">🔐 Sign In or Register</h2>
+      <label>Email</label><br/>
+      <input type="email" id="loginEmail" required style="width:100%;padding:8px;margin-bottom:10px;border-radius:6px;border:1px solid #2a346b;background:#0e1430;color:#fff"/><br/>
+      <label>Password</label><br/>
+      <input type="password" id="loginPass" required style="width:100%;padding:8px;margin-bottom:10px;border-radius:6px;border:1px solid #2a346b;background:#0e1430;color:#fff"/><br/>
+      <button type="submit" id="loginBtn" style="width:100%;padding:10px;background:#2a6bff;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-bottom:6px;">Login</button>
+
+      <button type="button" id="signupBtn" style="width:100%;padding:10px;background:#30db7d;color:#000;border:none;border-radius:8px;cursor:pointer;">Sign Up</button>
+      <div id="loginError" style="color:#ff6b6b;font-size:13px;margin-top:8px;"></div>
+    </div>
+  `;
+  const root = document.body;
+  const mainApp = document.querySelector('.wrap');
+
+  function showLogin() {
+    root.prepend(loginForm);
+    mainApp.style.display = 'none';
+    const emailEl = document.getElementById('loginEmail');
+    const passEl = document.getElementById('loginPass');
+    const errBox = document.getElementById('loginError');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value.trim());
+      } catch (err) {
+        errBox.textContent = err.message.replace('Firebase: ', '');
+      }
+    });
+
+    signupBtn.addEventListener('click', async () => {
+      try {
+        await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value.trim());
+      } catch (err) {
+        errBox.textContent = err.message.replace('Firebase: ', '');
+      }
+    });
+  }
+
+  function addLogoutButton() {
+    const btn = document.createElement('button');
+    btn.textContent = 'Logout';
+    btn.style = 'margin-left:auto;padding:8px 14px;border-radius:8px;background:#ff6b6b;border:none;color:white;cursor:pointer';
+    btn.addEventListener('click', () => signOut(auth));
+    document.querySelector('header').appendChild(btn);
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginForm.remove();
+      mainApp.style.display = 'block';
+      window.firebaseUser = user;
+      window.firebaseToolsRef = collection(db, 'tools');
+      window.render();
+      addLogoutButton();
+    } else {
+      showLogin();
+    }
+  });
+
+  window.firebaseAuth = auth;
+  window.addToolToFirestore = async (data) => await addDoc(window.firebaseToolsRef, data);
+  window.deleteToolFromFirestore = async (id) => await deleteDoc(doc(db, 'tools', id));
+  window.fetchTools = async () => {
+    const snapshot = await getDocs(window.firebaseToolsRef);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  };
+</script>
+
+</body>
+</html>
